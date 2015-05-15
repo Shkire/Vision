@@ -1,0 +1,7 @@
+practica1/training/*
+practica1/test/*
+practica2/testing_full_system/*
+practica2/testing_ocr/*
+practica2/training_ocr/*
+*~
+*.pyc
