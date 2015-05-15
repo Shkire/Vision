@@ -1,5 +1,7 @@
 __author__ = 'shkire'
 
+import os
+
 import cv2
 
 import numpy as np
@@ -40,7 +42,10 @@ keypoints = []
 
 vect=[]
 
-path = '/home/shkire/Escritorio/Vision/MaterialP3/training/frontal_'
+pathbase = os.path.dirname(os.path.abspath(__file__))
+path = pathbase + '/training/frontal_'
+
+print path
 
 extension = '.jpg'
 
@@ -88,7 +93,7 @@ flann.train()
 
 #-----------------------------------TESTEO------------------------------
 
-path2 = '/home/shkire/Escritorio/Vision/MaterialP3/test/test'
+path2 = pathbase + '/test/test'
 
 lista2=[]
 

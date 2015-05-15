@@ -13,10 +13,11 @@ def AisinsideB((Ax,Ay,Aw,Ah), (Bx,By,Bw,Bh)): #el primer rectangulo esta dentro 
 numerokeypoints = 100
 orb = cv2.ORB(numerokeypoints,1,1)
 lista = []
-pathcars = '/home/danielduque/Escritorio/Vision/MaterialP3/training/frontal_'
-haarClassifier = '/home/danielduque/Escritorio/Vision/MaterialP3/haar/matriculas.xml'
+pathbase = os.path.dirname(os.path.abspath(__file__))
+pathcars = pathbase + '/training/frontal_'
+haarClassifier = pathbase + '/haar/matriculas.xml'
 extension = '.jpg'
-pathchars = '/home/danielduque/Escritorio/Vision/MaterialP4/training_ocr/frontal_'
+pathchars = pathbase + '/training_ocr/frontal_'
 
 for i in xrange(1, 2):
 	#carga de la imagen
