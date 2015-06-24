@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 import matplotlib as mpl
@@ -14,26 +15,29 @@ numerokeypoints = 100
 orb = cv2.ORB(numerokeypoints,1,1)
 lista = []
 pathbase = os.path.dirname(os.path.abspath(__file__))
-pathcars = pathbase + '/training/frontal_'
+pathcars = pathbase + '/testing_ocr/frontal_'
 haarClassifier = pathbase + '/haar/matriculas.xml'
 extension = '.jpg'
 pathchars = pathbase + '/training_ocr/frontal_'
 
-for i in xrange(1, 2):
+for i in xrange(6, 7):
 	#carga de la imagen
 	imgpath = pathcars + str(i) + extension
+	print imgpath
 	temp = cv2.imread(imgpath,cv2.CV_LOAD_IMAGE_GRAYSCALE) #cv2.CV_LOAD_IMAGE_GRAYSCALE
 	plt.imshow(temp, cmap=mpl.cm.get_cmap('gray'))
 	#plt.imshow(temp)
+	plt.title("Imagen original")
 	plt.show()
 	#lista.append(temp)
 
 	#umbralizado
 	imgthreshold = cv2.adaptiveThreshold(temp, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 71, 7)
 	imgcontours = imgthreshold.copy() #es necesario, luego temp se destruye al umbralizar
-	#plt.imshow(imgthreshold, cmap=mpl.cm.get_cmap('gray'))
-	#plt.imshow(imgthreshold)
-	#plt.show()
+	plt.imshow(imgthreshold, cmap=mpl.cm.get_cmap('gray'))
+	plt.imshow(imgthreshold)
+	plt.title("Imagen umbralizada")
+	plt.show()
 
 	#deteccion de matricula
 	cascade = cv2.CascadeClassifier(haarClassifier)
@@ -48,31 +52,33 @@ for i in xrange(1, 2):
 	for (x,y,w,h) in matriculas:
 		cv2.rectangle(imgthreshold, (x,y), (x+w, y+h), (255,0,0), 2)
 	plt.imshow(imgthreshold)
+	plt.title("Matricula(s) detectada(s)")
 	plt.show()
-	print AisinsideB(matriculas[0], matriculas[1])
-	print AisinsideB(matriculas[1], matriculas[0])
-
-
 
 
 	#busqueda de contornos
 	contours,hierarchy = cv2.findContours(imgcontours,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE) #antes habia 1,2
 	top = len(contours)
-	proportions = []
-	for j in xrange(0,top):
-		cnt = contours[j]
+	#proportions = []
+	i = iter(contours)
+	finalcontours = []
+	for cnt in i:
+		#cnt = contours[j]
 		x,y,w,h = cv2.boundingRect(cnt)
-		#cv2.rectangle(imgthreshold,(x,y),(x+w,y+h),(0,255,0),2)
 		proportion = h/float(w)
-		#print proportion
-		if proportion > 1:
+		#si el rectangulo es vertical
+		if (proportion > 1):
 			for matricula in matriculas:
+				#si esta dentro de alguna de las matriculas encontradas
 				if AisinsideB((x,y,w,h), matricula):
-					cv2.rectangle(imgthreshold,(x,y),(x+w,y+h),(0,255,0),2)
+					#
+					if h > 0.5*matricula[3]:
+						finalcontours.append((x,y,w,h))
+						cv2.rectangle(imgthreshold,(x,y),(x+w,y+h),(0,255,0),2)
 			#proportions.append(proportion)
-			#cv2.rectangle(imgthreshold,(x,y),(x+w,y+h),(0,255,0),2)
+
 	plt.imshow(imgthreshold)
+	plt.title("Caracteres encontrados")
 	plt.show()
 
-
-	cascade = cv2.CascadeClassifier(haarClassifier);
+	#cascade = cv2.CascadeClassifier(haarClassifier);
