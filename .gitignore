@@ -5,3 +5,4 @@ practica2/testing_ocr/*
 practica2/training_ocr/*
 *~
 *.pyc
+practica2/haar/*
