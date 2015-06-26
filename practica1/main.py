@@ -139,13 +139,24 @@ for i in xrange(1, 34):
 # DETECCION HAAR
 clasCas = cv2.CascadeClassifier()
 clasCas.load(pathbase+'/haar/coches.xml')
-for i in xrange(0, 33):
-    img2=cv2.cvtColor(lista2[i],cv2.COLOR_GRAY2BGR)
-    rectangulos= clasCas.detectMultiScale(lista2[i],1.1,2)
-    #rectangulos= clasCas.detectMultiScale(lista2[i], scaleFactor=1.3, minNeighbors=5,
-    #                                         minSize=(10,10), flags=cv2.cv.CV_HAAR_SCALE_IMAGE)
+#for i in xrange(0, 33):
+    #img2=cv2.cvtColor(lista2[i],cv2.COLOR_GRAY2BGR)
+    #rectangulos= clasCas.detectMultiScale(lista2[i],1.1,10)
+    #for (x,y,w,h) in rectangulos:
+        #cv2.rectangle(img2,(x,y),(x+w,y+h),(255,0,0),2)
+    #print img2
+    #plt.imshow(img2)
+    #plt.show()
+
+vid = cv2.VideoCapture(pathbase+"Videos/video1.wmv")
+while(vid.isOpened()):
+    ret, frame = vid.read()
+    img2=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+    rectangulos= clasCas.detectMultiScale(frame,1.1,10)
     for (x,y,w,h) in rectangulos:
-        cv2.rectangle(img2,(x,y),(x+w,y+h),(255,0,0),2)
-    print img2
-    plt.imshow(img2)
-    plt.show()
+        cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
+    cv2.imshow('frame',frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+vid.release()
+cv2.destroyAllWindows()
