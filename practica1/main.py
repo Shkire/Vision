@@ -137,17 +137,15 @@ for i in xrange(1, 34):
 #     plt.show()
 
 # DETECCION HAAR
+clasCas = cv2.CascadeClassifier()
+clasCas.load(pathbase+'/haar/coches.xml')
 for i in xrange(0, 33):
-    clasCas = cv2.CascadeClassifier()
-    clasCas.load(pathbase+'/haar/coches.xml')
-    print pathbase+'/haar/coches.xml'
     img2=cv2.cvtColor(lista2[i],cv2.COLOR_GRAY2BGR)
-    rectangulos= clasCas.detectMultiScale(lista2[i],1.3,5)
+    rectangulos= clasCas.detectMultiScale(lista2[i],1.1,2)
     #rectangulos= clasCas.detectMultiScale(lista2[i], scaleFactor=1.3, minNeighbors=5,
     #                                         minSize=(10,10), flags=cv2.cv.CV_HAAR_SCALE_IMAGE)
-    print type(rectangulos)
-    print len(rectangulos)
     for (x,y,w,h) in rectangulos:
-        img2 = cv2.rectangle(img2,(x,y),(x+w,y+h),(255,0,0),2)
+        cv2.rectangle(img2,(x,y),(x+w,y+h),(255,0,0),2)
+    print img2
     plt.imshow(img2)
     plt.show()
