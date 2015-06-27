@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 import math
 from sklearn.lda import LDA
 
+#----------------------------Funciones auxiliares----------------------------
 #el primer rectangulo esta dentro del segundo
 def AisinsideB((Ax,Ay,Aw,Ah), (Bx,By,Bw,Bh)):
 	if (Ax>Bx) & (Ay>By) & ((Ax-Bx+Aw) < Bw) & ((Ay-By+Ah) < Bh):
@@ -55,6 +56,9 @@ def obtenercaracteristicas(imagen,rectangulos):
 	imagen = imagen.reshape(1,100)
 	return imagen[0]
 
+
+
+#----------------------------Programa principal----------------------------
 numerokeypoints = 100
 orb = cv2.ORB(numerokeypoints,1,1)
 lista = []
@@ -128,7 +132,7 @@ for i in xrange(6, 6):
 
 
 
-caracteres = ["7"]#, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+caracteres = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A"]#, "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
 pathtraining = pathbase + "/training_ocr/"
 C = [] #matriz de caracteristicas
 E = [] #vector de enteros. Fila i de la matriz C -> caracter caracteres[E[i]]
@@ -138,7 +142,6 @@ for caracter in caracteres:
 	for i in xrange(1,11):
 		#carga de la imagen
 		imgpath = pathtraining + caracter + "_" + str(i) + extension
-		print imgpath
 		temp = cv2.imread(imgpath,cv2.CV_LOAD_IMAGE_GRAYSCALE)
 		imgheight, imgwidth = temp.shape
 
@@ -177,12 +180,15 @@ lda = LDA()
 lda.fit(C, E)
 CR = lda.transform(C)
 
+CR = CR.astype(np.float32) 
+E = np.array(E)
+#probar: cv2.NormalBayesClassifier, cv2.EM, cv2.Knearest
+clasificador = cv2.NormalBayesClassifier()
+clasificador.train(CR, E)
 
-
-
-
-
-
+caracRed = lda.transform([caracteristicas])
+retval, results = clasificador.predict(np.float32(caracRed))
+print retval
 
 
 
