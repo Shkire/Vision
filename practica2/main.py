@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 import math
+from sklearn.lda import LDA
 
 #el primer rectangulo esta dentro del segundo
 def AisinsideB((Ax,Ay,Aw,Ah), (Bx,By,Bw,Bh)):
@@ -131,7 +132,9 @@ caracteres = ["7"]#, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C",
 pathtraining = pathbase + "/training_ocr/"
 C = [] #matriz de caracteristicas
 E = [] #vector de enteros. Fila i de la matriz C -> caracter caracteres[E[i]]
+pos = -1
 for caracter in caracteres:
+	pos = pos+1
 	for i in xrange(1,11):
 		#carga de la imagen
 		imgpath = pathtraining + caracter + "_" + str(i) + extension
@@ -168,8 +171,11 @@ for caracter in caracteres:
 		
 		#obtener vector de caracteristicas
 		caracteristicas = obtenercaracteristicas(temp,finalcontours)
-
-
+		C.append(caracteristicas)
+		E.append(pos)
+lda = LDA()
+lda.fit(C, E)
+CR = lda.transform(C)
 
 
 
