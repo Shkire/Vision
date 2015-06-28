@@ -63,7 +63,7 @@ def obtenercaracteristicas(imagen,rectangulos):
 pathbase = os.path.dirname(os.path.abspath(__file__))
 extension = '.jpg'
 
-#-----------------------Configuracion del OCR-----------------------
+#-----------------------Configuracion del OCR
 
 caracteres = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
 pathtraining = pathbase + "/training_ocr/"
@@ -118,29 +118,28 @@ E = np.array(E)
 clasificador = cv2.NormalBayesClassifier()
 clasificador.train(CR, E)
 
-caracRed = lda.transform([caracteristicas])
-retval, results = clasificador.predict(np.float32(caracRed))
-print retval
 
-
-#-----------------------Localizacion y reconocimiento de matriculas-----------------------
+#-----------------------Localizacion y reconocimiento de matriculas
 
 numerokeypoints = 100
 orb = cv2.ORB(numerokeypoints,1,1)
-pathcars = pathbase + '/testing_ocr/frontal_'
+pathcars = pathbase + '/testing_ocr'
 haarClassifier = pathbase + '/haar/matriculas.xml'
 pathchars = pathbase + '/training_ocr/frontal_'
+testimages = os.listdir(pathcars)
+testimages.sort()
 
-for i in xrange(6, 7):
+for img in testimages:
 	#carga de la imagen
-	imgpath = pathcars + str(i) + extension
+	imgpath = pathcars + "/" + img
 	print imgpath
-	temp = cv2.imread(imgpath,cv2.CV_LOAD_IMAGE_GRAYSCALE)
-	plt.imshow(temp, cmap=mpl.cm.get_cmap('gray'))
-	plt.title("Imagen original")
-	plt.show()
+	temp = cv2.imread(imgpath,cv2.CV_LOAD_IMAGE_GRAYSCALE) #GRAYSCALE
+	#plt.imshow(temp, cmap=mpl.cm.get_cmap('gray'))
+	#plt.title("Imagen original")
+	#plt.show()
 
 	#umbralizado
+	#imgthreshold = cv2.cvtColor(temp,cv2.COLOR_BGR2GRAY)
 	imgthreshold = cv2.adaptiveThreshold(temp, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 71, 7)
 	imgcontours = imgthreshold.copy() #es necesario, luego imgcontours se destruye
 
@@ -158,9 +157,9 @@ for i in xrange(6, 7):
 	imgcolour = cv2.cvtColor(imgcolour, cv2.COLOR_GRAY2BGR)
 	for (x,y,w,h) in matriculas:
 		cv2.rectangle(imgcolour, (x,y), (x+w, y+h), (255,0,0), 2)
-	plt.imshow(imgcolour)
-	plt.title("Matricula(s) detectada(s)")
-	plt.show()
+	#plt.imshow(imgcolour)
+	#plt.title("Matricula(s) detectada(s)")
+	#plt.show()
 
 
 	#busqueda de contornos
@@ -177,29 +176,17 @@ for i in xrange(6, 7):
 					#si tiene un tamano minimo
 					if h > 0.5*matricula[3]:
 						finalcontours.append((x,y,w,h))
-
-	C = [] #matriz de caracteristicas
-	for rect in finalcontours:
-		carac = obtenercaracteristicas(imgthreshold,[rect])
-		C.append(carac)
-	CR = lda.transform(C)
-	retval, results = clasificador.predict(np.float32(CR))
-	print results
-	plt.imshow(imgthreshold)
-	plt.title("Caracteres encontrados")
-	plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	if (len(finalcontours)>=1):
+		finalcontours = sorted (finalcontours, key=lambda tup: tup[0])
+		C = [] #matriz de caracteristicas
+		for rect in finalcontours:
+			carac = obtenercaracteristicas(imgthreshold,[rect])
+			C.append(carac)
+		CR = lda.transform(C)
+		retval, results = clasificador.predict(np.float32(CR))
+		matr = ""
+		for char in results:
+			matr = matr + (caracteres[int(char)])
+		print matr
+	else:
+		print "no se ha reconocido la matricula"
