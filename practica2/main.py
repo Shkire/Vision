@@ -1,4 +1,5 @@
 import os
+import sys
 import cv2
 import numpy as np
 import matplotlib as mpl
@@ -45,6 +46,14 @@ def erosionar (imgthreshold, finalcontours):
 			x,y,w,h = cv2.boundingRect(cnt) 
 			if (h < imgheight-5):
 				finalcontours1.append((x,y,w,h))
+
+		'''#mostrar contornos del caracter
+		imgcolour = cv2.cvtColor(imgthreshold, cv2.COLOR_GRAY2BGR)
+		for (x,y,w,h) in finalcontours1:
+			cv2.rectangle(imgcolour, (x,y), (x+w, y+h), (0,255,0), 1)
+		plt.imshow(imgcolour)
+		plt.title("Contornos del caracter tras erosionar")
+		plt.show()'''
 		return finalcontours1
 
 #dada una imagen y sus rectangulos, la recorta, redimensiona, y devuelve el vector de caracteristicas
@@ -67,6 +76,11 @@ extension = '.jpg'
 
 caracteres = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "ESP"]
 pathtraining = pathbase + "/training_ocr/"
+test = os.listdir(pathtraining)
+
+if (len(test) == 0):
+	sys.exit("Tiene que cambiar la ruta de la linea 78 por la que contenga las imagenes de entrenamiento del OCR")
+
 C = [] #matriz de caracteristicas
 E = [] #vector de enteros. Fila i de la matriz C -> caracter caracteres[E[i]]
 pos = -1
@@ -74,7 +88,7 @@ for caracter in caracteres:
 	pos = caracteres.index(caracter)
 	for i in xrange(1,251):
 		#carga de la imagen
-		imgpath = pathtraining + caracter + "_" + str(i) + extension
+		imgpath = pathtraining + "/" + caracter + "_" + str(i) + extension
 		temp = cv2.imread(imgpath,cv2.CV_LOAD_IMAGE_GRAYSCALE)
 		imgheight, imgwidth = temp.shape
 
@@ -114,7 +128,6 @@ CR = lda.transform(C)
 
 CR = CR.astype(np.float32) 
 E = np.array(E)
-#probar: cv2.NormalBayesClassifier, cv2.EM, cv2.Knearest
 clasificador = cv2.NormalBayesClassifier()
 clasificador.train(CR, E)
 
@@ -123,12 +136,14 @@ clasificador.train(CR, E)
 
 numerokeypoints = 100
 orb = cv2.ORB(numerokeypoints,1,1)
-pathcars = pathbase + '/testing_ocr'
+pathcars = pathbase + '/testing_full_system'
 haarClassifier = pathbase + '/haar/matriculas.xml'
-pathchars = pathbase + '/training_ocr/frontal_'
 testimages = os.listdir(pathcars)
+
+if (len(testimages) == 0):
+	sys.exit("Tiene que cambiar la ruta de la linea 133 por la que contenga las imagenes de evaluacion")
+
 testimages.sort()
-#testimages = ["frontal_39.jpg"]#"frontal_10.jpg", "frontal_12.jpg", "frontal_39.jpg", "frontal_46.jpg"]
 
 for img in testimages:
 	#carga de la imagen
@@ -141,7 +156,7 @@ for img in testimages:
 
 	#umbralizado
 	#imgthreshold = cv2.cvtColor(temp,cv2.COLOR_BGR2GRAY)
-	imgthreshold = cv2.adaptiveThreshold(temp, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 71, 7)
+	imgthreshold = cv2.adaptiveThreshold(temp, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 51, 7)
 	'''plt.imshow(imgthreshold, cmap=mpl.cm.get_cmap('gray'))
 	plt.title("Imagen umbralizada")
 	plt.show()'''
@@ -158,13 +173,14 @@ for img in testimages:
         	flags=cv2.cv.CV_HAAR_SCALE_IMAGE)
 
 	#mostrar matriculas sobre el coche
+	'''
 	imgcolour = imgthreshold.copy()
 	imgcolour = cv2.cvtColor(imgcolour, cv2.COLOR_GRAY2BGR)
 	for (x,y,w,h) in matriculas:
 		cv2.rectangle(imgcolour, (x,y), (x+w, y+h), (255,0,0), 2)
 	plt.imshow(imgcolour)
 	plt.title("Matricula(s) detectada(s)")
-	plt.show()
+	plt.show()'''
 
 
 	#busqueda de contornos
@@ -183,10 +199,11 @@ for img in testimages:
 				matrcontours = []
 				if AisinsideB((x,y,w,h), (mx,my,mw,mh)):
 					#si tiene un tamano minimo
-					if h > 0.5*mh:
+					if h > 0.45*mh:
 						finalcontours[j].append((x,y,w,h))
 
 	#mostrar caracteres sobre el coche
+	'''
 	imgcolour = imgthreshold.copy()
 	imgcolour = cv2.cvtColor(imgcolour, cv2.COLOR_GRAY2BGR)
 	for contours in finalcontours:
@@ -194,7 +211,7 @@ for img in testimages:
 			cv2.rectangle(imgcolour,(x,y),(x+w,y+h),(0,255,0),2)
 	plt.imshow(imgcolour)
 	plt.title("Caracteres detectados")
-	plt.show()
+	plt.show()'''
 
 
 
@@ -210,7 +227,8 @@ for img in testimages:
 				retval, results = clasificador.predict(np.float32(CR))
 				matr = ""
 				for char in results:
-					matr = matr + (caracteres[int(char)])
+					if (caracteres[int(char)] != "ESP"): #si se identifica, no hace falta imprimirlo
+						matr = matr + (caracteres[int(char)])
 				print matr
 	else:
 		print "No se ha reconocido la matricula"
